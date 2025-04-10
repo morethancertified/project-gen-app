@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import JobDescriptionUploader from '$lib/components/JobDescriptionUploader.svelte';
 
   // Define types for our data
   type Task = {
@@ -49,6 +50,11 @@
   // Handle removing skills
   function removeSkill(index: number) {
     skillsList = skillsList.filter((_, i) => i !== index);
+  }
+  
+  // Handle skills update from JobDescriptionUploader
+  function handleSkillsUpdate(event: CustomEvent) {
+    skillsList = event.detail.skills;
   }
 
   // Handle form submission
@@ -513,6 +519,11 @@
                 <option value="3-4 weeks">3-4 weeks</option>
               </select>
             </div>
+            
+            <JobDescriptionUploader 
+              {skillsList} 
+              on:updateSkills={handleSkillsUpdate} 
+            />
             
             <button
               type="submit"
