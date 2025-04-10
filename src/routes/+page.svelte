@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
   // Define types for our data
   type Task = {
     title: string;
@@ -27,6 +29,14 @@
   let error: string | null = null;
   let generatedProject: GeneratedProject | null = null;
   let completedDeliverables: Record<number, boolean> = {};
+  
+  onMount(() => {
+    // Listen for theme changes to ensure forms update correctly
+    window.addEventListener('themeChanged', () => {
+      // Force Svelte to update the component
+      skills = skills;
+    });
+  });
 
   // Handle adding skills
   function addSkill() {
@@ -93,7 +103,7 @@
   }
 
   header {
-    background: linear-gradient(to right, #00CED1, #8A2BE2);
+    background: linear-gradient(to right, var(--cyan), var(--purple));
     color: white;
     padding: 1rem 0;
     margin-bottom: 2rem;
@@ -121,11 +131,12 @@
   }
 
   .card {
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     border-radius: 0.5rem;
     padding: 1.5rem;
-    background-color: white;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-color: var(--card-bg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
   }
 
   h2 {
@@ -151,38 +162,70 @@
     font-weight: 500;
     margin-bottom: 0.25rem;
     display: block;
+    font-size: 0.875rem;
+    color: var(--text-color);
+    transition: color 0.3s ease;
   }
 
   input, select {
-    padding: 0.5rem;
-    border: 1px solid #d1d5db;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
     border-radius: 0.375rem;
-    font-size: 1rem;
+    font-size: 0.875rem;
     width: 100%;
     box-sizing: border-box;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    transition: all 0.2s ease;
+    outline: none;
+  }
+  
+  input:focus, select:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 2px rgba(0, 206, 209, 0.2);
+  }
+  
+  input:hover, select:hover {
+    border-color: var(--cyan);
   }
 
   .input-group {
     display: flex;
+    align-items: stretch;
   }
 
   .input-group input {
     flex: 1;
     border-top-right-radius: 0;
     border-bottom-right-radius: 0;
+    border-right: none;
+  }
+  
+  .input-group .btn-primary {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
   .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
     font-weight: 500;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.2s ease;
     border: none;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
   }
 
   .btn:hover {
     opacity: 0.9;
+    transform: translateY(-1px);
   }
 
   .btn:disabled {
@@ -191,15 +234,14 @@
   }
 
   .btn-primary {
-    background: linear-gradient(to right, #00CED1, #8A2BE2);
+    background: linear-gradient(to right, var(--cyan), var(--purple));
     color: white;
+    font-weight: 500;
+    transition: all 0.15s ease;
   }
-
-  .btn-add {
-    background: linear-gradient(to right, #00CED1, #8A2BE2);
-    color: white;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+  
+  .btn-primary:active {
+    transform: translateY(0);
   }
 
   .skill-tag {
@@ -280,19 +322,24 @@
   }
 
   .tag {
+    display: inline-block;
     padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
+    border-radius: 9999px;
     font-size: 0.75rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
   }
 
   .tag-cyan {
-    background: rgba(0, 206, 209, 0.1);
-    color: #00CED1;
+    background-color: rgba(0, 206, 209, 0.1);
+    color: var(--cyan);
   }
 
   .tag-purple {
-    background: rgba(138, 43, 226, 0.1);
-    color: #8A2BE2;
+    background-color: rgba(138, 43, 226, 0.1);
+    color: var(--purple);
   }
 
   .tags {
@@ -385,10 +432,10 @@
   }
 </style>
 
-<div style="font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0;">
-  <header style="background: linear-gradient(to right, #00CED1, #8A2BE2); color: white; padding: 1rem 0; margin-bottom: 2rem;">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
-      <h1 style="margin: 0; font-size: 1.5rem;">DevOps Project Generator</h1>
+<div>
+  <header class="site-header">
+    <div class="container">
+      <h1>DevOps Project Generator</h1>
     </div>
   </header>
 
@@ -416,8 +463,9 @@
                 />
                 <button
                   type="button"
+                  class="btn btn-primary"
                   on:click={addSkill}
-                  class="btn-add"
+                  disabled={!skills.trim()}
                 >
                   Add
                 </button>
@@ -472,9 +520,9 @@
               disabled={isGenerating || skillsList.length === 0}
             >
               {#if isGenerating}
-                Generating...
+                <span>Generating...</span>
               {:else}
-                Generate Project
+                <span>Generate Project</span>
               {/if}
             </button>
           </form>
